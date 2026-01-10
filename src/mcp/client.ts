@@ -52,9 +52,7 @@ export class MCPManager extends EventEmitter {
           version: "1.0.0"
         },
         {
-          capabilities: {
-            tools: {}
-          }
+          capabilities: {}
         }
       );
 
@@ -124,10 +122,13 @@ export class MCPManager extends EventEmitter {
     // Extract the original tool name (remove mcp__servername__ prefix)
     const originalToolName = toolName.replace(`mcp__${tool.serverName}__`, '');
 
-    return await client.callTool({
+    const result = await client.callTool({
       name: originalToolName,
       arguments: arguments_
     });
+    
+    // Ensure result has content property for compatibility
+    return result as CallToolResult;
   }
 
   getTools(): MCPTool[] {
