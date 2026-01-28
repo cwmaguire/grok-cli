@@ -714,21 +714,30 @@ Current working directory: ${process.cwd()}`,
       if (result.isError) {
         return {
           success: false,
-          error: (result.content[0] as any)?.text || "MCP tool error",
+          error: (result.content?.[0] as any)?.text || "MCP tool error",
         };
       }
 
-      // Extract content from result
-      const output = result.content
-        .map((item) => {
-          if (item.type === "text") {
-            return item.text;
-          } else if (item.type === "resource") {
-            return `Resource: ${item.resource?.uri || "Unknown"}`;
-          }
-          return String(item);
-        })
-        .join("\n");
+      // Extract content from result (handle both content array and toolResult)
+      let output: string;
+      if (result.content && Array.isArray(result.content)) {
+        output = result.content
+          .map((item) => {
+            if (item.type === "text") {
+              return item.text;
+            } else if (item.type === "resource") {
+              return `Resource: ${item.resource?.uri || "Unknown"}`;
+            }
+            return String(item);
+          })
+          .join("\n");
+      } else if (result.toolResult !== undefined) {
+        output = typeof result.toolResult === "string"
+          ? result.toolResult
+          : JSON.stringify(result.toolResult);
+      } else {
+        output = "Success";
+      }
 
       return {
         success: true,
