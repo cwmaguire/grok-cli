@@ -348,6 +348,37 @@ const BASE_GROK_TOOLS: GrokTool[] = [
       },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "code_execution",
+      description: "Safely execute code snippets in isolated Docker containers for testing",
+      parameters: {
+        type: "object",
+        properties: {
+          operation: {
+            type: "string",
+            enum: ["run", "test"],
+            description: "Operation to perform: 'run' to execute code, 'test' to test with sample input",
+          },
+          code: {
+            type: "string",
+            description: "The code to execute",
+          },
+          language: {
+            type: "string",
+            enum: ["javascript", "typescript", "python", "python3", "java", "cpp", "c", "go", "rust", "bash", "shell", "sh"],
+            description: "Programming language of the code",
+          },
+          input: {
+            type: "string",
+            description: "Optional input to provide to the code execution (passed via stdin)",
+          },
+        },
+        required: ["operation", "code", "language"],
+      },
+    },
+  },
 ];
 
 // Morph Fast Apply tool (conditional)
