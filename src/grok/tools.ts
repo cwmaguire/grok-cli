@@ -252,6 +252,102 @@ const BASE_GROK_TOOLS: GrokTool[] = [
       },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "apt",
+      description: "Ubuntu package management tool for installing, removing, and managing packages",
+      parameters: {
+        type: "object",
+        properties: {
+          operation: {
+            type: "string",
+            enum: ["install", "remove", "update", "upgrade", "search", "show"],
+            description: "Package operation to perform",
+          },
+          package: {
+            type: "string",
+            description: "Package name (required for install, remove, search, show)",
+          },
+        },
+        required: ["operation"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "systemctl",
+      description: "Systemd service management tool for controlling system services",
+      parameters: {
+        type: "object",
+        properties: {
+          operation: {
+            type: "string",
+            enum: ["start", "stop", "restart", "status", "enable", "disable", "is-active", "is-enabled"],
+            description: "Service operation to perform",
+          },
+          service: {
+            type: "string",
+            description: "Service name (e.g., nginx, docker, ssh)",
+          },
+        },
+        required: ["operation", "service"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "disk",
+      description: "Disk usage monitoring and management tool",
+      parameters: {
+        type: "object",
+        properties: {
+          operation: {
+            type: "string",
+            enum: ["usage", "free", "du", "large-files", "cleanup"],
+            description: "Disk operation to perform",
+          },
+          path: {
+            type: "string",
+            description: "Path to check (for usage, du, large-files)",
+          },
+          size: {
+            type: "string",
+            description: "Minimum file size (for large-files, e.g., '100M')",
+          },
+        },
+        required: ["operation"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "network",
+      description: "Network diagnostics and monitoring tool",
+      parameters: {
+        type: "object",
+        properties: {
+          operation: {
+            type: "string",
+            enum: ["ping", "traceroute", "interfaces", "connections", "dns", "speedtest"],
+            description: "Network operation to perform",
+          },
+          host: {
+            type: "string",
+            description: "Host to test (for ping, traceroute, dns)",
+          },
+          count: {
+            type: "string",
+            description: "Number of ping packets to send",
+          },
+        },
+        required: ["operation"],
+      },
+    },
+  },
 ];
 
 // Morph Fast Apply tool (conditional)

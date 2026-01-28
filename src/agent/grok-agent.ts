@@ -15,6 +15,10 @@ import {
   TodoTool,
   ConfirmationTool,
   SearchTool,
+  AptTool,
+  SystemctlTool,
+  DiskTool,
+  NetworkTool,
 } from "../tools/index.js";
 import { ToolResult } from "../types/index.js";
 import { EventEmitter } from "events";
@@ -49,6 +53,10 @@ export class GrokAgent extends EventEmitter {
   private todoTool: TodoTool;
   private confirmationTool: ConfirmationTool;
   private search: SearchTool;
+  private apt: AptTool;
+  private systemctl: SystemctlTool;
+  private disk: DiskTool;
+  private network: NetworkTool;
   private chatHistory: ChatEntry[] = [];
   private messages: GrokMessage[] = [];
   private tokenCounter: TokenCounter;
@@ -74,6 +82,10 @@ export class GrokAgent extends EventEmitter {
     this.todoTool = new TodoTool();
     this.confirmationTool = new ConfirmationTool();
     this.search = new SearchTool();
+    this.apt = new AptTool();
+    this.systemctl = new SystemctlTool();
+    this.disk = new DiskTool();
+    this.network = new NetworkTool();
     this.tokenCounter = createTokenCounter(modelToUse);
 
     // Initialize MCP servers if configured
@@ -99,6 +111,10 @@ You have access to these tools:
           : ""
       }
 - bash: Execute bash commands (use for searching, file discovery, navigation, and system operations)
+- apt: Ubuntu package management (install, remove, update, search packages)
+- systemctl: Systemd service management (start, stop, restart, enable services)
+- disk: Disk usage monitoring and cleanup suggestions
+- network: Network diagnostics (ping, traceroute, interfaces, connections)
 - search: Unified search tool for finding text content or files (similar to Cursor's search functionality)
 - create_todo_list: Create a visual todo list for planning and tracking tasks
 - update_todo_list: Update existing todos in your todo list
@@ -684,6 +700,18 @@ Current working directory: ${process.cwd()}`,
             fileTypes: args.file_types,
             includeHidden: args.include_hidden,
           });
+
+        case "apt":
+          return await this.apt.execute(args.operation, args.package);
+
+        case "systemctl":
+          return await this.systemctl.execute(args.operation, args.service);
+
+        case "disk":
+          return await this.disk.execute(args.operation, args.path, args.size);
+
+        case "network":
+          return await this.network.execute(args.operation, args.host, args.count);
 
         default:
           // Check if this is an MCP tool
