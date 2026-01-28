@@ -25,14 +25,28 @@ export interface GrokToolCall {
   };
 }
 
-export interface SearchParameters {
-  mode?: "auto" | "on" | "off";
-  // sources removed - let API use default sources to avoid format issues
+// Agent Tools API - Web Search Tool
+export interface WebSearchTool {
+  type: "web_search";
+  filters?: {
+    allowed_domains?: string[];  // max 5
+    excluded_domains?: string[]; // max 5
+    enable_image_understanding?: boolean;
+  };
 }
 
-export interface SearchOptions {
-  search_parameters?: SearchParameters;
+// Agent Tools API - X (Twitter) Search Tool
+export interface XSearchTool {
+  type: "x_search";
+  allowed_x_handles?: string[];  // max 10
+  excluded_x_handles?: string[]; // max 10
+  from_date?: string;  // ISO8601 YYYY-MM-DD
+  to_date?: string;
+  enable_image_understanding?: boolean;
+  enable_video_understanding?: boolean;
 }
+
+export type GrokBuiltInTool = WebSearchTool | XSearchTool;
 
 export interface GrokResponse {
   choices: Array<{
@@ -73,9 +87,8 @@ export class GrokClient {
 
   async chat(
     messages: GrokMessage[],
-    tools?: GrokTool[],
-    model?: string,
-    searchOptions?: SearchOptions
+    tools?: (GrokTool | GrokBuiltInTool)[],
+    model?: string
   ): Promise<GrokResponse> {
     try {
       const requestPayload: any = {
@@ -86,11 +99,6 @@ export class GrokClient {
         temperature: 0.7,
         max_tokens: this.defaultMaxTokens,
       };
-
-      // Add search parameters if specified
-      if (searchOptions?.search_parameters) {
-        requestPayload.search_parameters = searchOptions.search_parameters;
-      }
 
       const response =
         await this.client.chat.completions.create(requestPayload);
@@ -103,9 +111,8 @@ export class GrokClient {
 
   async *chatStream(
     messages: GrokMessage[],
-    tools?: GrokTool[],
-    model?: string,
-    searchOptions?: SearchOptions
+    tools?: (GrokTool | GrokBuiltInTool)[],
+    model?: string
   ): AsyncGenerator<any, void, unknown> {
     try {
       const requestPayload: any = {
@@ -117,11 +124,6 @@ export class GrokClient {
         max_tokens: this.defaultMaxTokens,
         stream: true,
       };
-
-      // Add search parameters if specified
-      if (searchOptions?.search_parameters) {
-        requestPayload.search_parameters = searchOptions.search_parameters;
-      }
 
       const stream = (await this.client.chat.completions.create(
         requestPayload
@@ -135,19 +137,4 @@ export class GrokClient {
     }
   }
 
-  async search(
-    query: string,
-    searchParameters?: SearchParameters
-  ): Promise<GrokResponse> {
-    const searchMessage: GrokMessage = {
-      role: "user",
-      content: query,
-    };
-
-    const searchOptions: SearchOptions = {
-      search_parameters: searchParameters || { mode: "on" },
-    };
-
-    return this.chat([searchMessage], [], undefined, searchOptions);
-  }
 }

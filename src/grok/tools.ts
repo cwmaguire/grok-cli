@@ -1,6 +1,17 @@
-import { GrokTool } from "./client.js";
+import { GrokTool, GrokBuiltInTool } from "./client.js";
 import { MCPManager, MCPTool } from "../mcp/client.js";
 import { loadMCPConfig } from "../mcp/config.js";
+
+/**
+ * Create search tools for the Agent Tools API.
+ * These tools enable Grok to search the web and X (Twitter) for real-time information.
+ */
+export function createSearchTools(): GrokBuiltInTool[] {
+  return [
+    { type: "web_search" },
+    { type: "x_search" }
+  ];
+}
 
 const BASE_GROK_TOOLS: GrokTool[] = [
   {

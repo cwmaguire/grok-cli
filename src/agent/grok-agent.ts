@@ -5,6 +5,7 @@ import {
   getAllGrokTools,
   getMCPManager,
   initializeMCPServers,
+  createSearchTools,
 } from "../grok/tools.js";
 import { loadMCPConfig } from "../mcp/config.js";
 import {
@@ -215,14 +216,12 @@ Current working directory: ${process.cwd()}`,
     let toolRounds = 0;
 
     try {
-      const tools = await getAllGrokTools();
+      const baseTools = await getAllGrokTools();
+      const shouldSearch = this.isGrokModel() && this.shouldUseSearchFor(message);
+      const tools = shouldSearch ? [...baseTools, ...createSearchTools()] : baseTools;
       let currentResponse = await this.grokClient.chat(
         this.messages,
-        tools,
-        undefined,
-        this.isGrokModel() && this.shouldUseSearchFor(message)
-          ? { search_parameters: { mode: "auto" } }
-          : { search_parameters: { mode: "off" } }
+        tools
       );
 
       // Agent loop - continue until no more tool calls or max rounds reached
@@ -314,11 +313,7 @@ Current working directory: ${process.cwd()}`,
           // Get next response - this might contain more tool calls
           currentResponse = await this.grokClient.chat(
             this.messages,
-            tools,
-            undefined,
-            this.isGrokModel() && this.shouldUseSearchFor(message)
-              ? { search_parameters: { mode: "auto" } }
-              : { search_parameters: { mode: "off" } }
+            tools
           );
         } else {
           // No more tool calls, add final response
@@ -435,14 +430,12 @@ Current working directory: ${process.cwd()}`,
         }
 
         // Stream response and accumulate
-        const tools = await getAllGrokTools();
+        const baseTools = await getAllGrokTools();
+        const shouldSearch = this.isGrokModel() && this.shouldUseSearchFor(message);
+        const tools = shouldSearch ? [...baseTools, ...createSearchTools()] : baseTools;
         const stream = this.grokClient.chatStream(
           this.messages,
-          tools,
-          undefined,
-          this.isGrokModel() && this.shouldUseSearchFor(message)
-            ? { search_parameters: { mode: "auto" } }
-            : { search_parameters: { mode: "off" } }
+          tools
         );
         let accumulatedMessage: any = {};
         let accumulatedContent = "";
