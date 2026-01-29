@@ -25,28 +25,12 @@ export interface GrokToolCall {
   };
 }
 
-// Agent Tools API - Web Search Tool
-export interface WebSearchTool {
-  type: "web_search";
-  filters?: {
-    allowed_domains?: string[];  // max 5
-    excluded_domains?: string[]; // max 5
-    enable_image_understanding?: boolean;
-  };
+// Live Search Tool - enables real-time web and X search
+export interface LiveSearchTool {
+  type: "live_search";
 }
 
-// Agent Tools API - X (Twitter) Search Tool
-export interface XSearchTool {
-  type: "x_search";
-  allowed_x_handles?: string[];  // max 10
-  excluded_x_handles?: string[]; // max 10
-  from_date?: string;  // ISO8601 YYYY-MM-DD
-  to_date?: string;
-  enable_image_understanding?: boolean;
-  enable_video_understanding?: boolean;
-}
-
-export type GrokBuiltInTool = WebSearchTool | XSearchTool;
+export type GrokBuiltInTool = LiveSearchTool;
 
 export interface GrokResponse {
   choices: Array<{
