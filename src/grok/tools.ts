@@ -8,8 +8,8 @@ import { loadMCPConfig } from "../mcp/config.js";
  */
 export function createSearchTools(): GrokBuiltInTool[] {
   return [
-    { type: "live_search", sources: [] },
-    { type: "x_search", sources: [] }
+    { type: "web_search", sources: [] },
+    { type: "web_search", sources: [] }
   ];
 }
 

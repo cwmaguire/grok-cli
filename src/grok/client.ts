@@ -28,7 +28,7 @@ export interface GrokToolCall {
 
 // Agent Tools API - Web Search Tool
 export interface WebSearchTool {
-  type: "live_search";
+  type: "web_search";
   filters?: {
     allowed_domains?: string[];  // max 5
     excluded_domains?: string[]; // max 5
@@ -39,7 +39,7 @@ export interface WebSearchTool {
 
 // Agent Tools API - X (Twitter) Search Tool
 export interface XSearchTool {
-  type: "x_search";
+  type: "web_search";
   allowed_x_handles?: string[];  // max 10
   excluded_x_handles?: string[]; // max 10
   from_date?: string;  // ISO8601 YYYY-MM-DD
