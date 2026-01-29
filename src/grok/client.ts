@@ -25,12 +25,9 @@ export interface GrokToolCall {
   };
 }
 
-// Live Search Tool - enables real-time web and X search
-export interface LiveSearchTool {
-  type: "live_search";
-}
-
-export type GrokBuiltInTool = LiveSearchTool;
+// NOTE: Built-in search tools (web_search, x_search, live_search) are NOT supported
+// on the OpenAI-compatible /v1/chat/completions endpoint. They only work with the
+// native xAI SDK (gRPC-based). Only function tools (type: "function") work here.
 
 export interface GrokResponse {
   choices: Array<{
@@ -71,7 +68,7 @@ export class GrokClient {
 
   async chat(
     messages: GrokMessage[],
-    tools?: (GrokTool | GrokBuiltInTool)[],
+    tools?: GrokTool[],
     model?: string
   ): Promise<GrokResponse> {
     try {
@@ -95,7 +92,7 @@ export class GrokClient {
 
   async *chatStream(
     messages: GrokMessage[],
-    tools?: (GrokTool | GrokBuiltInTool)[],
+    tools?: GrokTool[],
     model?: string
   ): AsyncGenerator<any, void, unknown> {
     try {

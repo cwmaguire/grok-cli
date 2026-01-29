@@ -1,16 +1,11 @@
-import { GrokTool, GrokBuiltInTool } from "./client.js";
+import { GrokTool } from "./client.js";
 import { MCPManager, MCPTool } from "../mcp/client.js";
 import { loadMCPConfig } from "../mcp/config.js";
 
-/**
- * Create search tools for the Agent Tools API.
- * Enables Grok to search the web and X (Twitter) for real-time information.
- */
-export function createSearchTools(): GrokBuiltInTool[] {
-  return [
-    { type: "live_search" }
-  ];
-}
+// NOTE: Built-in search tools (web_search, x_search, live_search) are NOT supported
+// on the OpenAI-compatible /v1/chat/completions endpoint used by this client.
+// They only work with the native xAI SDK (gRPC-based).
+// To add web search, implement it as a custom function tool calling a third-party API.
 
 const BASE_GROK_TOOLS: GrokTool[] = [
   {
