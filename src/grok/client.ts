@@ -14,7 +14,6 @@ export interface GrokTool {
       required: string[];
     };
   };
-  sources: string[];
 }
 
 export interface GrokToolCall {
@@ -34,19 +33,17 @@ export interface WebSearchTool {
     excluded_domains?: string[]; // max 5
     enable_image_understanding?: boolean;
   };
-  sources: string[];
 }
 
 // Agent Tools API - X (Twitter) Search Tool
 export interface XSearchTool {
-  type: "web_search";
+  type: "x_search";
   allowed_x_handles?: string[];  // max 10
   excluded_x_handles?: string[]; // max 10
   from_date?: string;  // ISO8601 YYYY-MM-DD
   to_date?: string;
   enable_image_understanding?: boolean;
   enable_video_understanding?: boolean;
-  sources: string[];
 }
 
 export type GrokBuiltInTool = WebSearchTool | XSearchTool;

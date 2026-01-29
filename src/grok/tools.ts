@@ -8,8 +8,8 @@ import { loadMCPConfig } from "../mcp/config.js";
  */
 export function createSearchTools(): GrokBuiltInTool[] {
   return [
-    { type: "web_search", sources: [] },
-    { type: "web_search", sources: [] }
+    { type: "web_search" },
+    { type: "x_search" }
   ];
 }
 
@@ -39,8 +39,7 @@ const BASE_GROK_TOOLS: GrokTool[] = [
         required: ["path"],
       },
     },
-    sources: [],
-  },
+    },
   {
     type: "function",
     function: {
@@ -61,8 +60,7 @@ const BASE_GROK_TOOLS: GrokTool[] = [
         required: ["path", "content"],
       },
     },
-    sources: [],
-  },
+    },
   {
     type: "function",
     function: {
@@ -93,8 +91,7 @@ const BASE_GROK_TOOLS: GrokTool[] = [
         required: ["path", "old_str", "new_str"],
       },
     },
-    sources: [],
-  },
+    },
 
   {
     type: "function",
@@ -112,8 +109,7 @@ const BASE_GROK_TOOLS: GrokTool[] = [
         required: ["command"],
       },
     },
-    sources: [],
-  },
+    },
   {
     type: "function",
     function: {
@@ -173,8 +169,7 @@ const BASE_GROK_TOOLS: GrokTool[] = [
         required: ["query"],
       },
     },
-    sources: [],
-  },
+    },
   {
     type: "function",
     function: {
@@ -215,8 +210,7 @@ const BASE_GROK_TOOLS: GrokTool[] = [
         required: ["todos"],
       },
     },
-    sources: [],
-  },
+    },
   {
     type: "function",
     function: {
@@ -257,8 +251,7 @@ const BASE_GROK_TOOLS: GrokTool[] = [
         required: ["updates"],
       },
     },
-    sources: [],
-  },
+    },
   {
     type: "function",
     function: {
@@ -280,8 +273,7 @@ const BASE_GROK_TOOLS: GrokTool[] = [
         required: ["operation"],
       },
     },
-    sources: [],
-  },
+    },
   {
     type: "function",
     function: {
@@ -303,8 +295,7 @@ const BASE_GROK_TOOLS: GrokTool[] = [
         required: ["operation", "service"],
       },
     },
-    sources: [],
-  },
+    },
   {
     type: "function",
     function: {
@@ -330,8 +321,7 @@ const BASE_GROK_TOOLS: GrokTool[] = [
         required: ["operation"],
       },
     },
-    sources: [],
-  },
+    },
   {
     type: "function",
     function: {
@@ -357,8 +347,7 @@ const BASE_GROK_TOOLS: GrokTool[] = [
         required: ["operation"],
       },
     },
-    sources: [],
-  },
+    },
   {
     type: "function",
     function: {
@@ -389,8 +378,7 @@ const BASE_GROK_TOOLS: GrokTool[] = [
         required: ["operation", "code", "language"],
       },
     },
-    sources: [],
-  },
+    },
 ];
 
 // Morph Fast Apply tool (conditional)
@@ -417,8 +405,7 @@ const MORPH_EDIT_TOOL: GrokTool = {
       },
       required: ["target_file", "instructions", "code_edit"]
     }
-  },
-  sources: []
+  }
 };
 
 // Function to build tools array conditionally
@@ -501,8 +488,7 @@ export function convertMCPToolToGrokTool(mcpTool: MCPTool): GrokTool {
         properties: {},
         required: []
       }
-    },
-    sources: []
+    }
   };
 }
 
