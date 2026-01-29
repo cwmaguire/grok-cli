@@ -19,6 +19,7 @@ import {
   DiskTool,
   NetworkTool,
   CodeExecutionTool,
+  WebSearchTool,
 } from "../tools/index.js";
 import { ToolResult } from "../types/index.js";
 import { EventEmitter } from "events";
@@ -58,6 +59,7 @@ export class GrokAgent extends EventEmitter {
   private disk: DiskTool;
   private network: NetworkTool;
   private codeExecution: CodeExecutionTool;
+  private webSearch: WebSearchTool;
   private chatHistory: ChatEntry[] = [];
   private messages: GrokMessage[] = [];
   private tokenCounter: TokenCounter;
@@ -88,6 +90,7 @@ export class GrokAgent extends EventEmitter {
     this.disk = new DiskTool();
     this.network = new NetworkTool();
     this.codeExecution = new CodeExecutionTool();
+    this.webSearch = new WebSearchTool();
     this.tokenCounter = createTokenCounter(modelToUse);
 
     // Initialize MCP servers if configured
@@ -119,6 +122,7 @@ You have access to these tools:
 - network: Network diagnostics (ping, traceroute, interfaces, connections)
 - code_execution: Safely execute code snippets in Docker containers (JavaScript, Python, Java, C++, Go, Rust, Bash)
 - search: Unified search tool for finding text content or files (similar to Cursor's search functionality)
+- web_search: Search the web for current information, documentation, news (requires TAVILY_API_KEY)
 - create_todo_list: Create a visual todo list for planning and tracking tasks
 - update_todo_list: Update existing todos in your todo list
 
@@ -682,6 +686,13 @@ Current working directory: ${process.cwd()}`,
 
         case "code_execution":
           return await this.codeExecution.execute(args.operation, args.code, args.language, args.input);
+
+        case "web_search":
+          return await this.webSearch.search(args.query, {
+            maxResults: args.max_results,
+            searchDepth: args.search_depth,
+            topic: args.topic,
+          });
 
         default:
           // Check if this is an MCP tool

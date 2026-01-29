@@ -9,3 +9,4 @@ export { SystemctlTool } from "./systemctl.js";
 export { DiskTool } from "./disk.js";
 export { NetworkTool } from "./network.js";
 export { CodeExecutionTool } from "./code-execution.js";
+export { WebSearchTool } from "./web-search.js";

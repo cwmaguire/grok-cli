@@ -373,6 +373,37 @@ const BASE_GROK_TOOLS: GrokTool[] = [
       },
     },
     },
+  {
+    type: "function",
+    function: {
+      name: "web_search",
+      description: "Search the web for current information, news, documentation, or any real-time data. Uses Tavily API. Requires TAVILY_API_KEY environment variable.",
+      parameters: {
+        type: "object",
+        properties: {
+          query: {
+            type: "string",
+            description: "The search query - be specific and descriptive for best results",
+          },
+          max_results: {
+            type: "number",
+            description: "Maximum number of results to return (1-20, default: 5)",
+          },
+          search_depth: {
+            type: "string",
+            enum: ["basic", "advanced"],
+            description: "Search depth: 'basic' for faster results, 'advanced' for more comprehensive search",
+          },
+          topic: {
+            type: "string",
+            enum: ["general", "news", "finance"],
+            description: "Topic category to focus the search (default: 'general')",
+          },
+        },
+        required: ["query"],
+      },
+    },
+    },
 ];
 
 // Morph Fast Apply tool (conditional)
