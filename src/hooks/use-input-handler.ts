@@ -198,6 +198,7 @@ export function useInputHandler({
   const {
     input,
     cursorPosition,
+    multilineMode,
     setInput,
     setCursorPosition,
     clearInput,
@@ -207,6 +208,7 @@ export function useInputHandler({
     onSubmit: handleInputSubmit,
     onSpecialKey: handleSpecialKey,
     disabled: isConfirmationActive,
+    multiline: true,
   });
 
   // Hook up the actual input handling
@@ -740,6 +742,7 @@ Respond with ONLY the commit message, no additional text.`;
   return {
     input,
     cursorPosition,
+    multilineMode,
     showCommandSuggestions,
     selectedCommandIndex,
     showModelSelection,

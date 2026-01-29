@@ -6,6 +6,7 @@ interface ChatInputProps {
   cursorPosition: number;
   isProcessing: boolean;
   isStreaming: boolean;
+  multilineMode?: boolean;
 }
 
 export function ChatInput({
@@ -13,6 +14,7 @@ export function ChatInput({
   cursorPosition,
   isProcessing,
   isStreaming,
+  multilineMode = false,
 }: ChatInputProps) {
   const beforeCursor = input.slice(0, cursorPosition);
   const afterCursor = input.slice(cursorPosition);
@@ -38,6 +40,7 @@ export function ChatInput({
   const showCursor = !isProcessing && !isStreaming;
   const borderColor = isProcessing || isStreaming ? "yellow" : "blue";
   const promptColor = "cyan";
+  const promptChar = multilineMode ? "↳" : "❯";
 
   // Display placeholder when input is empty
   const placeholderText = "Ask me anything...";
@@ -53,7 +56,7 @@ export function ChatInput({
       >
         {lines.map((line, index) => {
           const isCurrentLine = index === currentLineIndex;
-          const promptChar = index === 0 ? "❯" : "│";
+          const promptChar = index === 0 ? (multilineMode ? "↳" : "❯") : "│";
 
           if (isCurrentLine) {
             const beforeCursorInLine = line.slice(0, currentCharIndex);
@@ -102,7 +105,7 @@ export function ChatInput({
       marginTop={1}
     >
       <Box>
-        <Text color={promptColor}>❯ </Text>
+        <Text color={promptColor}>{promptChar} </Text>
         {isPlaceholder ? (
           <>
             <Text color="gray" dimColor>
