@@ -332,6 +332,10 @@ program
     "maximum number of tool execution rounds (default: 400)",
     "400"
   )
+  .option(
+    "--auto-edit",
+    "enable auto-edit mode (auto-approve file and bash operations)"
+  )
   .action(async (message, options) => {
     if (options.directory) {
       try {
@@ -379,6 +383,12 @@ program
       // Interactive mode: launch UI
       const agent = new GrokAgent(apiKey, baseURL, model, maxToolRounds);
       console.log("🤖 Starting Grok CLI Conversational Assistant...\n");
+
+      // Enable auto-edit mode if requested
+      if (options.autoEdit) {
+        const confirmationService = ConfirmationService.getInstance();
+        confirmationService.setSessionFlag("allOperations", true);
+      }
 
       ensureUserSettingsDirectory();
 

@@ -54,4 +54,29 @@ export function getMCPServer(serverName: string): MCPServerConfig | undefined {
 }
 
 // Predefined server configurations
-export const PREDEFINED_SERVERS: Record<string, MCPServerConfig> = {};
+export const PREDEFINED_SERVERS: Record<string, MCPServerConfig> = {
+  git: {
+    name: 'git',
+    transport: {
+      type: 'stdio',
+      command: 'npx',
+      args: ['-y', '@modelcontextprotocol/server-git', '--repository', '.']
+    }
+  },
+  filesystem: {
+    name: 'filesystem',
+    transport: {
+      type: 'stdio',
+      command: 'npx',
+      args: ['-y', '@modelcontextprotocol/server-filesystem', '/tmp']
+    }
+  },
+  sqlite: {
+    name: 'sqlite',
+    transport: {
+      type: 'stdio',
+      command: 'npx',
+      args: ['-y', '@modelcontextprotocol/server-sqlite', '--db-path', '/tmp/test.db']
+    }
+  }
+};

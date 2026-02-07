@@ -16,20 +16,32 @@ export function MCPStatus({}: MCPStatusProps) {
         const servers = manager.getServers();
         const tools = manager.getTools();
 
-        setConnectedServers(servers);
-        setAvailableTools(tools);
+        // Only update state if there's actually a change to avoid unnecessary re-renders
+        setConnectedServers(prev => {
+          if (prev.length !== servers.length || !prev.every(s => servers.includes(s))) {
+            return servers;
+          }
+          return prev;
+        });
+
+        setAvailableTools(prev => {
+          if (prev.length !== tools.length || !prev.every(t => tools.some(nt => nt.name === t.name))) {
+            return tools;
+          }
+          return prev;
+        });
       } catch (error) {
         // MCP manager not initialized yet
-        setConnectedServers([]);
-        setAvailableTools([]);
+        setConnectedServers(prev => prev.length > 0 ? [] : prev);
+        setAvailableTools(prev => prev.length > 0 ? [] : prev);
       }
     };
 
     // Initial update with a small delay to allow MCP initialization
     const initialTimer = setTimeout(updateStatus, 2000);
 
-    // Set up polling to check for status changes
-    const interval = setInterval(updateStatus, 2000);
+    // Set up polling to check for status changes (less frequent to prevent flickering)
+    const interval = setInterval(updateStatus, 10000); // Changed from 2000ms to 10000ms
 
     return () => {
       clearTimeout(initialTimer);
