@@ -44,6 +44,7 @@ function ChatInterfaceWithAgent({
   const {
     input,
     cursorPosition,
+    multilineMode,
     showCommandSuggestions,
     selectedCommandIndex,
     showModelSelection,
@@ -351,6 +352,7 @@ function ChatInterfaceWithAgent({
             cursorPosition={cursorPosition}
             isProcessing={isProcessing}
             isStreaming={isStreaming}
+            multilineMode={multilineMode}
           />
 
           <Box flexDirection="row" marginTop={1}>

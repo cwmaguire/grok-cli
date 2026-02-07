@@ -2,6 +2,11 @@ import { GrokTool } from "./client.js";
 import { MCPManager, MCPTool } from "../mcp/client.js";
 import { loadMCPConfig } from "../mcp/config.js";
 
+// NOTE: Built-in search tools (web_search, x_search, live_search) are NOT supported
+// on the OpenAI-compatible /v1/chat/completions endpoint used by this client.
+// They only work with the native xAI SDK (gRPC-based).
+// To add web search, implement it as a custom function tool calling a third-party API.
+
 const BASE_GROK_TOOLS: GrokTool[] = [
   {
     type: "function",
@@ -28,7 +33,7 @@ const BASE_GROK_TOOLS: GrokTool[] = [
         required: ["path"],
       },
     },
-  },
+    },
   {
     type: "function",
     function: {
@@ -49,7 +54,7 @@ const BASE_GROK_TOOLS: GrokTool[] = [
         required: ["path", "content"],
       },
     },
-  },
+    },
   {
     type: "function",
     function: {
@@ -80,7 +85,7 @@ const BASE_GROK_TOOLS: GrokTool[] = [
         required: ["path", "old_str", "new_str"],
       },
     },
-  },
+    },
 
   {
     type: "function",
@@ -98,7 +103,7 @@ const BASE_GROK_TOOLS: GrokTool[] = [
         required: ["command"],
       },
     },
-  },
+    },
   {
     type: "function",
     function: {
@@ -158,7 +163,7 @@ const BASE_GROK_TOOLS: GrokTool[] = [
         required: ["query"],
       },
     },
-  },
+    },
   {
     type: "function",
     function: {
@@ -199,7 +204,7 @@ const BASE_GROK_TOOLS: GrokTool[] = [
         required: ["todos"],
       },
     },
-  },
+    },
   {
     type: "function",
     function: {
@@ -240,7 +245,165 @@ const BASE_GROK_TOOLS: GrokTool[] = [
         required: ["updates"],
       },
     },
-  },
+    },
+  {
+    type: "function",
+    function: {
+      name: "apt",
+      description: "Ubuntu package management tool for installing, removing, and managing packages",
+      parameters: {
+        type: "object",
+        properties: {
+          operation: {
+            type: "string",
+            enum: ["install", "remove", "update", "upgrade", "search", "show"],
+            description: "Package operation to perform",
+          },
+          package: {
+            type: "string",
+            description: "Package name (required for install, remove, search, show)",
+          },
+        },
+        required: ["operation"],
+      },
+    },
+    },
+  {
+    type: "function",
+    function: {
+      name: "systemctl",
+      description: "Systemd service management tool for controlling system services",
+      parameters: {
+        type: "object",
+        properties: {
+          operation: {
+            type: "string",
+            enum: ["start", "stop", "restart", "status", "enable", "disable", "is-active", "is-enabled"],
+            description: "Service operation to perform",
+          },
+          service: {
+            type: "string",
+            description: "Service name (e.g., nginx, docker, ssh)",
+          },
+        },
+        required: ["operation", "service"],
+      },
+    },
+    },
+  {
+    type: "function",
+    function: {
+      name: "disk",
+      description: "Disk usage monitoring and management tool",
+      parameters: {
+        type: "object",
+        properties: {
+          operation: {
+            type: "string",
+            enum: ["usage", "free", "du", "large-files", "cleanup"],
+            description: "Disk operation to perform",
+          },
+          path: {
+            type: "string",
+            description: "Path to check (for usage, du, large-files)",
+          },
+          size: {
+            type: "string",
+            description: "Minimum file size (for large-files, e.g., '100M')",
+          },
+        },
+        required: ["operation"],
+      },
+    },
+    },
+  {
+    type: "function",
+    function: {
+      name: "network",
+      description: "Network diagnostics and monitoring tool",
+      parameters: {
+        type: "object",
+        properties: {
+          operation: {
+            type: "string",
+            enum: ["ping", "traceroute", "interfaces", "connections", "dns", "speedtest"],
+            description: "Network operation to perform",
+          },
+          host: {
+            type: "string",
+            description: "Host to test (for ping, traceroute, dns)",
+          },
+          count: {
+            type: "string",
+            description: "Number of ping packets to send",
+          },
+        },
+        required: ["operation"],
+      },
+    },
+    },
+  {
+    type: "function",
+    function: {
+      name: "code_execution",
+      description: "Safely execute code snippets in isolated Docker containers for testing",
+      parameters: {
+        type: "object",
+        properties: {
+          operation: {
+            type: "string",
+            enum: ["run", "test"],
+            description: "Operation to perform: 'run' to execute code, 'test' to test with sample input",
+          },
+          code: {
+            type: "string",
+            description: "The code to execute",
+          },
+          language: {
+            type: "string",
+            enum: ["javascript", "typescript", "python", "python3", "java", "cpp", "c", "go", "rust", "bash", "shell", "sh"],
+            description: "Programming language of the code",
+          },
+          input: {
+            type: "string",
+            description: "Optional input to provide to the code execution (passed via stdin)",
+          },
+        },
+        required: ["operation", "code", "language"],
+      },
+    },
+    },
+  {
+    type: "function",
+    function: {
+      name: "web_search",
+      description: "Search the web for current information, news, documentation, or any real-time data. Uses Tavily API. Requires TAVILY_API_KEY environment variable.",
+      parameters: {
+        type: "object",
+        properties: {
+          query: {
+            type: "string",
+            description: "The search query - be specific and descriptive for best results",
+          },
+          max_results: {
+            type: "number",
+            description: "Maximum number of results to return (1-20, default: 5)",
+          },
+          search_depth: {
+            type: "string",
+            enum: ["basic", "advanced"],
+            description: "Search depth: 'basic' for faster results, 'advanced' for more comprehensive search",
+          },
+          topic: {
+            type: "string",
+            enum: ["general", "news", "finance"],
+            description: "Topic category to focus the search (default: 'general')",
+          },
+        },
+        required: ["query"],
+      },
+    },
+    },
 ];
 
 // Morph Fast Apply tool (conditional)

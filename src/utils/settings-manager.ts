@@ -34,7 +34,7 @@ export interface ProjectSettings {
  */
 const DEFAULT_USER_SETTINGS: Partial<UserSettings> = {
   baseURL: "https://api.x.ai/v1",
-  defaultModel: "grok-code-fast-1",
+  defaultModel: "grok-4-1-fast-reasoning",
   models: [
     // Grok 4.1 Fast models (2M context, latest - November 2025)
     "grok-4-1-fast-reasoning",

@@ -1,5 +1,5 @@
 import { Command } from 'commander';
-import { addMCPServer, removeMCPServer, loadMCPConfig, PREDEFINED_SERVERS } from '../mcp/config.js';
+import { addMCPServer, removeMCPServer, loadMCPConfig, PREDEFINED_SERVERS, getMCPServer } from '../mcp/config.js';
 import { getMCPManager } from '../grok/tools.js';
 import { MCPServerConfig } from '../mcp/client.js';
 import chalk from 'chalk';
@@ -260,6 +260,54 @@ export function createMCPCommand(): Command {
 
       } catch (error: any) {
         console.error(chalk.red(`✗ Failed to connect to ${name}: ${error.message}`));
+        process.exit(1);
+      }
+    });
+
+  // Install predefined server command
+  mcpCommand
+    .command('install <name>')
+    .description('Install a predefined MCP server')
+    .action(async (name: string) => {
+      try {
+        const predefinedConfig = PREDEFINED_SERVERS[name];
+
+        if (!predefinedConfig) {
+          console.error(chalk.red(`Predefined server '${name}' not found. Available servers: ${Object.keys(PREDEFINED_SERVERS).join(', ')}`));
+          process.exit(1);
+        }
+
+        // Validate configuration
+        if (!predefinedConfig.transport || predefinedConfig.transport.type !== 'stdio') {
+          console.error(chalk.red(`Predefined server '${name}' is not configured for stdio transport.`));
+          process.exit(1);
+        }
+
+        if (!predefinedConfig.transport.command) {
+          console.error(chalk.red(`Predefined server '${name}' is missing command configuration.`));
+          process.exit(1);
+        }
+
+        // Check if already exists
+        const existingConfig = getMCPServer(name);
+        if (existingConfig) {
+          console.error(chalk.red(`Server '${name}' is already configured. Use 'grok mcp remove ${name}' to remove it first.`));
+          process.exit(1);
+        }
+
+        addMCPServer(predefinedConfig);
+        console.log(chalk.green(`✓ Added predefined MCP server: ${name}`));
+
+        // Try to connect immediately
+        const manager = getMCPManager();
+        await manager.addServer(predefinedConfig);
+        console.log(chalk.green(`✓ Connected to MCP server: ${name}`));
+
+        const tools = manager.getTools().filter(t => t.serverName === name);
+        console.log(chalk.blue(`  Available tools: ${tools.length}`));
+
+      } catch (error: any) {
+        console.error(chalk.red(`Error installing MCP server: ${error.message}`));
         process.exit(1);
       }
     });

@@ -1,11 +1,21 @@
 import React from 'react';
-import { Text } from 'ink';
+import { Text, Box } from 'ink';
 import { marked } from 'marked';
 import TerminalRenderer from 'marked-terminal';
+import { colorizeCode } from './code-colorizer.js';
 
-// Configure marked to use the terminal renderer with default settings
+// Custom code renderer function
+const customCodeRenderer = (code: string, language?: string) => {
+  // Use our custom syntax highlighter for code blocks
+  const highlighted = colorizeCode(code, language || null);
+  return highlighted;
+};
+
+// Configure marked to use terminal renderer with custom code highlighting
 marked.setOptions({
-  renderer: new (TerminalRenderer as any)()
+  renderer: new (TerminalRenderer as any)({
+    code: customCodeRenderer
+  })
 });
 
 export function MarkdownRenderer({ content }: { content: string }) {

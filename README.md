@@ -412,6 +412,26 @@ This enables Linear tools like:
 - Update issue status and assignees
 - Access team and project information
 
+### Installing Predefined MCP Servers
+
+Grok CLI includes predefined configurations for popular stdio-based MCP servers that can be installed with a single command:
+
+```bash
+# Install Git MCP server for repository operations
+grok mcp install git
+
+# Install Filesystem MCP server for file operations
+grok mcp install filesystem
+
+# Install SQLite MCP server for database queries
+grok mcp install sqlite
+```
+
+Available predefined servers:
+- **git**: Git repository operations (status, commits, branches, etc.)
+- **filesystem**: File system operations (read, write, list directories)
+- **sqlite**: SQLite database queries and operations
+
 ### Managing MCP Servers
 
 ```bash

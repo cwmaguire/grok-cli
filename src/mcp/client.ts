@@ -1,7 +1,20 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { EventEmitter } from "events";
 import { createTransport, MCPTransport, TransportType, TransportConfig } from "./transports.js";
+
+// Define our own CallToolResult interface compatible with SDK 1.25.3
+// The SDK can return either content array or toolResult
+export interface CallToolResult {
+  content?: Array<{
+    type: string;
+    text?: string;
+    resource?: { uri?: string };
+    [key: string]: unknown;
+  }>;
+  toolResult?: unknown;
+  isError?: boolean;
+  [key: string]: unknown;
+}
 
 export interface MCPServerConfig {
   name: string;
@@ -52,9 +65,7 @@ export class MCPManager extends EventEmitter {
           version: "1.0.0"
         },
         {
-          capabilities: {
-            tools: {}
-          }
+          capabilities: {}
         }
       );
 

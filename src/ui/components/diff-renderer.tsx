@@ -241,14 +241,27 @@ const renderDiffContent = (
         }
 
         const displayContent = line.content.substring(baseIndentation);
+        const isCodeFile = shouldHighlightAsCode(filename);
+        const language = getLanguageFromFilename(filename);
+
+        // For code files, use syntax highlighting
+        const renderContent = () => {
+          if (isCodeFile && language) {
+            return colorizeCode(displayContent, language, availableTerminalHeight, terminalWidth);
+          } else {
+            return (
+              <Text color={backgroundColor ? '#000000' : undefined} backgroundColor={backgroundColor} dimColor={!backgroundColor && dim} wrap="wrap">
+                {displayContent}
+              </Text>
+            );
+          }
+        };
 
         acc.push(
           <Box key={lineKey} flexDirection="row">
             <Text color={Colors.Gray} dimColor={dim}>{gutterNumStr.padEnd(4)}</Text>
             <Text color={backgroundColor ? '#000000' : undefined} backgroundColor={backgroundColor} dimColor={!backgroundColor && dim}>{prefixSymbol} </Text>
-            <Text color={backgroundColor ? '#000000' : undefined} backgroundColor={backgroundColor} dimColor={!backgroundColor && dim} wrap="wrap">
-              {displayContent}
-            </Text>
+            {renderContent()}
           </Box>,
         );
         return acc;
@@ -277,4 +290,15 @@ const getLanguageFromExtension = (extension: string): string | null => {
     rb: 'ruby',
   };
   return languageMap[extension] || null; // Return null if extension not found
+};
+
+const getLanguageFromFilename = (filename: string | undefined): string | null => {
+  if (!filename) return null;
+  const extension = filename.split('.').pop()?.toLowerCase();
+  return extension ? getLanguageFromExtension(extension) : null;
+};
+
+const shouldHighlightAsCode = (filename: string | undefined): boolean => {
+  const language = getLanguageFromFilename(filename);
+  return language !== null && language !== 'plaintext' && language !== 'txt';
 };

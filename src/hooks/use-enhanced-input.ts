@@ -28,12 +28,25 @@ export interface Key {
   tab?: boolean;
   backspace?: boolean;
   delete?: boolean;
+  f1?: boolean;
+  f2?: boolean;
+  f3?: boolean;
+  f4?: boolean;
+  f5?: boolean;
+  f6?: boolean;
+  f7?: boolean;
+  f8?: boolean;
+  f9?: boolean;
+  f10?: boolean;
+  f11?: boolean;
+  f12?: boolean;
 }
 
 export interface EnhancedInputHook {
   input: string;
   cursorPosition: number;
   isMultiline: boolean;
+  multilineMode: boolean;
   setInput: (text: string) => void;
   setCursorPosition: (position: number) => void;
   clearInput: () => void;
@@ -59,6 +72,7 @@ export function useEnhancedInput({
 }: UseEnhancedInputProps = {}): EnhancedInputHook {
   const [input, setInputState] = useState("");
   const [cursorPosition, setCursorPositionState] = useState(0);
+  const [multilineMode, setMultilineMode] = useState(false);
   const isMultilineRef = useRef(multiline);
   
   const {
@@ -124,10 +138,16 @@ export function useEnhancedInput({
       return;
     }
 
+    // Handle F1 to toggle multiline mode
+    if (key.f1) {
+      setMultilineMode(!multilineMode);
+      return;
+    }
+
     // Handle Enter/Return
     if (key.return) {
-      if (multiline && key.shift) {
-        // Shift+Enter in multiline mode inserts newline
+      if (multiline && multilineMode) {
+        // In multiline mode, Enter inserts newline
         const result = insertText(input, cursorPosition, "\n");
         setInputState(result.text);
         setCursorPositionState(result.position);
@@ -288,6 +308,7 @@ export function useEnhancedInput({
     input,
     cursorPosition,
     isMultiline: isMultilineRef.current,
+    multilineMode,
     setInput,
     setCursorPosition,
     clearInput,

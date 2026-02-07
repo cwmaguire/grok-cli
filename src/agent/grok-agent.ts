@@ -14,6 +14,12 @@ import {
   TodoTool,
   ConfirmationTool,
   SearchTool,
+  AptTool,
+  SystemctlTool,
+  DiskTool,
+  NetworkTool,
+  CodeExecutionTool,
+  WebSearchTool,
 } from "../tools/index.js";
 import { ToolResult } from "../types/index.js";
 import { EventEmitter } from "events";
@@ -48,6 +54,12 @@ export class GrokAgent extends EventEmitter {
   private todoTool: TodoTool;
   private confirmationTool: ConfirmationTool;
   private search: SearchTool;
+  private apt: AptTool;
+  private systemctl: SystemctlTool;
+  private disk: DiskTool;
+  private network: NetworkTool;
+  private codeExecution: CodeExecutionTool;
+  private webSearch: WebSearchTool;
   private chatHistory: ChatEntry[] = [];
   private messages: GrokMessage[] = [];
   private tokenCounter: TokenCounter;
@@ -73,6 +85,12 @@ export class GrokAgent extends EventEmitter {
     this.todoTool = new TodoTool();
     this.confirmationTool = new ConfirmationTool();
     this.search = new SearchTool();
+    this.apt = new AptTool();
+    this.systemctl = new SystemctlTool();
+    this.disk = new DiskTool();
+    this.network = new NetworkTool();
+    this.codeExecution = new CodeExecutionTool();
+    this.webSearch = new WebSearchTool();
     this.tokenCounter = createTokenCounter(modelToUse);
 
     // Initialize MCP servers if configured
@@ -98,12 +116,15 @@ You have access to these tools:
           : ""
       }
 - bash: Execute bash commands (use for searching, file discovery, navigation, and system operations)
+- apt: Ubuntu package management (install, remove, update, search packages)
+- systemctl: Systemd service management (start, stop, restart, enable services)
+- disk: Disk usage monitoring and cleanup suggestions
+- network: Network diagnostics (ping, traceroute, interfaces, connections)
+- code_execution: Safely execute code snippets in Docker containers (JavaScript, Python, Java, C++, Go, Rust, Bash)
 - search: Unified search tool for finding text content or files (similar to Cursor's search functionality)
+- web_search: Search the web for current information, documentation, news (requires TAVILY_API_KEY)
 - create_todo_list: Create a visual todo list for planning and tracking tasks
 - update_todo_list: Update existing todos in your todo list
-
-REAL-TIME INFORMATION:
-You have access to real-time web search and X (Twitter) data. When users ask for current information, latest news, or recent events, you automatically have access to up-to-date information from the web and social media.
 
 IMPORTANT TOOL USAGE RULES:
 - NEVER use create_file on files that already exist - this will overwrite them completely
@@ -167,38 +188,9 @@ Current working directory: ${process.cwd()}`,
     });
   }
 
-  private isGrokModel(): boolean {
-    const currentModel = this.grokClient.getCurrentModel();
-    return currentModel.toLowerCase().includes("grok");
-  }
-
-  // Heuristic: enable web search only when likely needed
-  private shouldUseSearchFor(message: string): boolean {
-    const q = message.toLowerCase();
-    const keywords = [
-      "today",
-      "latest",
-      "news",
-      "trending",
-      "breaking",
-      "current",
-      "now",
-      "recent",
-      "x.com",
-      "twitter",
-      "tweet",
-      "what happened",
-      "as of",
-      "update on",
-      "release notes",
-      "changelog",
-      "price",
-    ];
-    if (keywords.some((k) => q.includes(k))) return true;
-    // crude date pattern (e.g., 2024/2025) may imply recency
-    if (/(20\d{2})/.test(q)) return true;
-    return false;
-  }
+  // NOTE: Built-in search tools (web_search, x_search, live_search) are NOT supported
+  // on the OpenAI-compatible /v1/chat/completions endpoint. They only work with the
+  // native xAI SDK (gRPC-based). To add web search, implement as a custom function tool.
 
   async processUserMessage(message: string): Promise<ChatEntry[]> {
     // Add user message to conversation
@@ -218,11 +210,7 @@ Current working directory: ${process.cwd()}`,
       const tools = await getAllGrokTools();
       let currentResponse = await this.grokClient.chat(
         this.messages,
-        tools,
-        undefined,
-        this.isGrokModel() && this.shouldUseSearchFor(message)
-          ? { search_parameters: { mode: "auto" } }
-          : { search_parameters: { mode: "off" } }
+        tools
       );
 
       // Agent loop - continue until no more tool calls or max rounds reached
@@ -314,11 +302,7 @@ Current working directory: ${process.cwd()}`,
           // Get next response - this might contain more tool calls
           currentResponse = await this.grokClient.chat(
             this.messages,
-            tools,
-            undefined,
-            this.isGrokModel() && this.shouldUseSearchFor(message)
-              ? { search_parameters: { mode: "auto" } }
-              : { search_parameters: { mode: "off" } }
+            tools
           );
         } else {
           // No more tool calls, add final response
@@ -438,11 +422,7 @@ Current working directory: ${process.cwd()}`,
         const tools = await getAllGrokTools();
         const stream = this.grokClient.chatStream(
           this.messages,
-          tools,
-          undefined,
-          this.isGrokModel() && this.shouldUseSearchFor(message)
-            ? { search_parameters: { mode: "auto" } }
-            : { search_parameters: { mode: "off" } }
+          tools
         );
         let accumulatedMessage: any = {};
         let accumulatedContent = "";
@@ -692,6 +672,28 @@ Current working directory: ${process.cwd()}`,
             includeHidden: args.include_hidden,
           });
 
+        case "apt":
+          return await this.apt.execute(args.operation, args.package);
+
+        case "systemctl":
+          return await this.systemctl.execute(args.operation, args.service);
+
+        case "disk":
+          return await this.disk.execute(args.operation, args.path, args.size);
+
+        case "network":
+          return await this.network.execute(args.operation, args.host, args.count);
+
+        case "code_execution":
+          return await this.codeExecution.execute(args.operation, args.code, args.language, args.input);
+
+        case "web_search":
+          return await this.webSearch.search(args.query, {
+            maxResults: args.max_results,
+            searchDepth: args.search_depth,
+            topic: args.topic,
+          });
+
         default:
           // Check if this is an MCP tool
           if (toolCall.function.name.startsWith("mcp__")) {
@@ -721,21 +723,30 @@ Current working directory: ${process.cwd()}`,
       if (result.isError) {
         return {
           success: false,
-          error: (result.content[0] as any)?.text || "MCP tool error",
+          error: (result.content?.[0] as any)?.text || "MCP tool error",
         };
       }
 
-      // Extract content from result
-      const output = result.content
-        .map((item) => {
-          if (item.type === "text") {
-            return item.text;
-          } else if (item.type === "resource") {
-            return `Resource: ${item.resource?.uri || "Unknown"}`;
-          }
-          return String(item);
-        })
-        .join("\n");
+      // Extract content from result (handle both content array and toolResult)
+      let output: string;
+      if (result.content && Array.isArray(result.content)) {
+        output = result.content
+          .map((item) => {
+            if (item.type === "text") {
+              return item.text;
+            } else if (item.type === "resource") {
+              return `Resource: ${item.resource?.uri || "Unknown"}`;
+            }
+            return String(item);
+          })
+          .join("\n");
+      } else if (result.toolResult !== undefined) {
+        output = typeof result.toolResult === "string"
+          ? result.toolResult
+          : JSON.stringify(result.toolResult);
+      } else {
+        output = "Success";
+      }
 
       return {
         success: true,
