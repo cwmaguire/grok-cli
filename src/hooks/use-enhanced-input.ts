@@ -126,8 +126,9 @@ export function useEnhancedInput({
 
     // Handle Enter/Return
     if (key.return) {
-      if (multiline && key.shift) {
-        // Shift+Enter in multiline mode inserts newline
+      if (multiline && (key.shift || key.meta)) {
+        // Shift+Enter or Option/Alt+Enter in multiline mode inserts newline
+        // (works in terminals that send distinguishable sequences for these)
         const result = insertText(input, cursorPosition, "\n");
         setInputState(result.text);
         setCursorPositionState(result.position);
@@ -138,8 +139,24 @@ export function useEnhancedInput({
       return;
     }
 
-    // Handle history navigation
+    // Handle up/down arrows: navigate lines in multiline input, or history
     if ((key.upArrow || key.name === 'up') && !key.ctrl && !key.meta) {
+      if (multiline && input.includes("\n")) {
+        // Find current line info
+        const beforeCursor = input.slice(0, cursorPosition);
+        const lineStart = beforeCursor.lastIndexOf("\n");
+        if (lineStart !== -1) {
+          // Not on first line — move cursor up
+          const col = cursorPosition - lineStart - 1;
+          const prevLineStart = input.lastIndexOf("\n", lineStart - 1);
+          const prevStart = prevLineStart === -1 ? 0 : prevLineStart + 1;
+          const prevLineLen = lineStart - prevStart;
+          const newPos = prevStart + Math.min(col, prevLineLen);
+          setCursorPositionState(newPos);
+          return;
+        }
+      }
+      // On first line (or single-line): navigate history
       const historyInput = navigateHistory("up");
       if (historyInput !== null) {
         setInputState(historyInput);
@@ -149,6 +166,22 @@ export function useEnhancedInput({
     }
 
     if ((key.downArrow || key.name === 'down') && !key.ctrl && !key.meta) {
+      if (multiline && input.includes("\n")) {
+        // Find current line info
+        const nextNewline = input.indexOf("\n", cursorPosition);
+        if (nextNewline !== -1) {
+          // Not on last line — move cursor down
+          const lineStart = input.lastIndexOf("\n", cursorPosition - 1);
+          const col = cursorPosition - (lineStart === -1 ? 0 : lineStart + 1);
+          const nextLineStart = nextNewline + 1;
+          const nextLineEnd = input.indexOf("\n", nextLineStart);
+          const nextLineLen = (nextLineEnd === -1 ? input.length : nextLineEnd) - nextLineStart;
+          const newPos = nextLineStart + Math.min(col, nextLineLen);
+          setCursorPositionState(newPos);
+          return;
+        }
+      }
+      // On last line (or single-line): navigate history
       const historyInput = navigateHistory("down");
       if (historyInput !== null) {
         setInputState(historyInput);
@@ -184,14 +217,16 @@ export function useEnhancedInput({
       return;
     }
 
-    // Handle Home/End keys or Ctrl+A/E
+    // Handle Home/End keys or Ctrl+A/E (line-aware in multiline mode)
     if ((key.ctrl && inputChar === "a") || key.name === "home") {
-      setCursorPositionState(0); // Simple start of input
+      const newPos = moveToLineStart(input, cursorPosition);
+      setCursorPositionState(newPos);
       return;
     }
 
     if ((key.ctrl && inputChar === "e") || key.name === "end") {
-      setCursorPositionState(input.length); // Simple end of input
+      const newPos = moveToLineEnd(input, cursorPosition);
+      setCursorPositionState(newPos);
       return;
     }
 
@@ -275,9 +310,22 @@ export function useEnhancedInput({
       return;
     }
 
-    // Handle regular character input
+    // Handle Ctrl+J as explicit newline insertion in multiline mode
+    if (multiline && key.ctrl && inputChar === "\n") {
+      const result = insertText(input, cursorPosition, "\n");
+      setInputState(result.text);
+      setCursorPositionState(result.position);
+      setOriginalInput(result.text);
+      return;
+    }
+
+    // Handle regular character input (including pasted text with newlines)
     if (inputChar && !key.ctrl && !key.meta) {
-      const result = insertText(input, cursorPosition, inputChar);
+      // Normalize line endings from pasted text (\r\n → \n, lone \r → \n)
+      const normalized = multiline
+        ? inputChar.replace(/\r\n/g, "\n").replace(/\r/g, "\n")
+        : inputChar.replace(/[\r\n]/g, " ");
+      const result = insertText(input, cursorPosition, normalized);
       setInputState(result.text);
       setCursorPositionState(result.position);
       setOriginalInput(result.text);

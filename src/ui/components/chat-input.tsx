@@ -46,8 +46,10 @@ export function ChatInput({
   if (isMultiline) {
     return (
       <Box
+        flexDirection="column"
         borderStyle="round"
         borderColor={borderColor}
+        paddingX={1}
         paddingY={0}
         marginTop={1}
       >

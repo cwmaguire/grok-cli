@@ -207,6 +207,7 @@ export function useInputHandler({
     onSubmit: handleInputSubmit,
     onSpecialKey: handleSpecialKey,
     disabled: isConfirmationActive,
+    multiline: true,
   });
 
   // Hook up the actual input handling
@@ -272,6 +273,8 @@ Git Commands:
 
 Enhanced Input Features:
   ↑/↓ Arrow   - Navigate command history
+  Shift+Enter - Insert newline
+  Ctrl+J      - Insert newline
   Ctrl+C      - Clear input (press twice to exit)
   Ctrl+←/→    - Move by word
   Ctrl+A/E    - Move to line start/end

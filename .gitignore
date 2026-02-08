@@ -98,5 +98,4 @@ temp/
 *.sw?
 
 # Coding agents
-.claude/
 .grok/

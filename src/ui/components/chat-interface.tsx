@@ -305,9 +305,12 @@ function ChatInterfaceWithAgent({
               3. Create GROK.md files to customize your interactions with Grok.
             </Text>
             <Text color="gray">
-              4. Press Shift+Tab to toggle auto-edit mode.
+              4. Shift+Enter or Ctrl+J to insert a newline.
             </Text>
-            <Text color="gray">5. /help for more information.</Text>
+            <Text color="gray">
+              5. Press Shift+Tab to toggle auto-edit mode.
+            </Text>
+            <Text color="gray">6. /help for more information.</Text>
           </Box>
         </Box>
       )}
