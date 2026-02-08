@@ -283,13 +283,24 @@ export function useEnhancedInput({
       return;
     }
 
-    // Handle Ctrl+U: Delete from cursor to start of line
+    // Handle Ctrl+U: Delete from cursor to start of line.
+    // If already at start of line, delete the newline above (removes the line).
     if (key.ctrl && inputChar === "u") {
       const lineStart = moveToLineStart(input, cursorPosition);
-      const newText = input.slice(0, lineStart) + input.slice(cursorPosition);
-      setInputState(newText);
-      setCursorPositionState(lineStart);
-      setOriginalInput(newText);
+      if (cursorPosition > lineStart) {
+        // There's text before cursor on this line — delete it
+        const newText = input.slice(0, lineStart) + input.slice(cursorPosition);
+        setInputState(newText);
+        setCursorPositionState(lineStart);
+        setOriginalInput(newText);
+      } else if (lineStart > 0) {
+        // Cursor is at start of line and there's a newline before — delete it
+        const newText = input.slice(0, lineStart - 1) + input.slice(lineStart);
+        const newPos = lineStart - 1;
+        setInputState(newText);
+        setCursorPositionState(newPos);
+        setOriginalInput(newText);
+      }
       return;
     }
 
